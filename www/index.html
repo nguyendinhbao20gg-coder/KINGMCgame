@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>kingsmpvn - Tài Xỉu Online</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <style>
+    * {
+        user-select: none;
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+    body {
+        background: #7b00b4;
+        margin: 0;
+        padding: 10px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        overflow: hidden;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .main {
+        background: url('imgs/img.png') no-repeat -1150px -2px;
+        width: 771px;
+        height: 507px;
+        margin: auto;
+        position: relative;
+        text-align: center;
+        transform: scale(0.95);
+        transform-origin: center;
+    }
+
+    @media (max-width: 768px) {
+        body { padding: 5px; }
+        .main { transform: scale(0.65); transform-origin: center; }
+    }
+    @media (max-width: 480px) {
+        .main { transform: scale(0.50); transform-origin: center; }
+    }
+    @media (max-width: 380px) {
+        .main { transform: scale(0.42); transform-origin: center; }
+    }
+
+    /* ===== BÁT ===== */
+    .bat-overlay {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 260px;
+        height: 260px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 50% 50%, 
+            #8D6E63 0%, 
+            #6D4C41 45%, 
+            #4E342E 75%, 
+            #3E2723 100%
+        );
+        border: 6px solid #5D4037;
+        box-shadow: 
+            0 10px 40px rgba(0,0,0,0.6),
+            inset 0 -20px 40px rgba(0,0,0,0.4),
+            inset 0 20px 40px rgba(139, 115, 85, 0.2);
+        z-index: 20;
+        cursor: grab;
+        touch-action: none;
+        transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s ease;
+        pointer-events: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .bat-overlay.locked {
+        cursor: default !important;
+        pointer-events: none !important;
+        filter: none;
+        transition: none;
+    }
+
+    .bat-overlay .lock-icon {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 3rem;
+        color: rgba(255,215,0,0.25);
+        text-shadow: 0 0 30px rgba(255,215,0,0.05);
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+        z-index: 3;
+    }
+
+    .bat-overlay.locked .lock-icon { opacity: 1; }
+    .bat-overlay.locked .label { opacity: 0.2; }
+    .bat-overlay:active { cursor: grabbing; }
+    .bat-overlay.dragging {
+        cursor: grabbing;
+        z-index: 30;
+        transition: none !important;
+    }
+
+    .bat-overlay .handle {
+        position: absolute;
+        top: -14px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 12px;
+        background: linear-gradient(to bottom, #A1887F, #6D4C41);
+        border-radius: 6px 6px 0 0;
+        border: 2px solid #5D4037;
+        border-bottom: none;
+        box-shadow: 0 -3px 10px rgba(0,0,0,0.2);
+        z-index: 5;
+    }
+
+    .bat-overlay .handle::after {
+        content: '✦';
+        position: absolute;
+        top: -14px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: #ffd700;
+        font-size: 12px;
+        text-shadow: 0 0 10px rgba(255,215,0,0.3);
+    }
+
+    .bat-overlay .label {
+        color: rgba(255,215,0,0.15);
+        font-size: 1.2rem;
+        letter-spacing: 8px;
+        font-weight: bold;
+        text-transform: uppercase;
+        pointer-events: none;
+        text-shadow: 0 0 20px rgba(255,215,0,0.05);
+        transition: opacity 0.3s ease;
+        z-index: 2;
+        position: relative;
+    }
+
+    .lock-notice {
+        position: absolute;
+        bottom: -42px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: rgba(255,215,0,0.6);
+        font-size: 0.7rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        white-space: nowrap;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+        pointer-events: none;
+        font-weight: 700;
+        background: rgba(0,0,0,0.5);
+        padding: 5px 20px;
+        border-radius: 12px;
+        border: 1px solid rgba(255,215,0,0.08);
+        text-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+
+    .lock-notice.show { opacity: 1; }
+
+    .bat-overlay.closed {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+    .bat-overlay.opening {
+        transform: translate(-50%, -50%) scale(0.3) translateY(-60px);
+        transition: transform 1.8s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.8s ease;
+        opacity: 0.8;
+    }
+    .bat-overlay.open {
+        transform: translate(-50%, -50%) scale(0) translateY(-100px);
+        transition: transform 1.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 1s ease;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .bat-glow {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 280px;
+        height: 280px;
+        background: radial-gradient(circle, rgba(255,215,0,0.2), transparent 70%);
+        border-radius: 50%;
+        opacity: 0;
+        transition: all 0.8s ease;
+        pointer-events: none;
+        z-index: 15;
+    }
+    .bat-glow.show {
+        opacity: 1;
+        animation: glowPulse 1s ease-in-out 3;
+    }
+
+    @keyframes glowPulse {
+        0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.3; }
+        50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.7; }
+    }
+
+    .result-display {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 3.5rem;
+        font-weight: bold;
+        color: #ffd700;
+        text-shadow: 0 0 40px rgba(255,215,0,0.6), 0 0 80px rgba(255,215,0,0.3);
+        opacity: 0;
+        transition: all 0.5s ease;
+        z-index: 40;
+        pointer-events: none;
+        background: rgba(0,0,0,0.5);
+        padding: 10px 30px;
+        border-radius: 15px;
+        border: 2px solid rgba(255,215,0,0.2);
+    }
+    .result-display.show {
+        opacity: 1;
+        animation: resultPop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes resultPop {
+        0% { transform: translate(-50%, -50%) scale(0) rotate(-10deg); opacity: 0; }
+        70% { transform: translate(-50%, -50%) scale(1.2) rotate(3deg); opacity: 1; }
+        100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
+    }
+
+    .bat-countdown {
+        position: absolute;
+        top: -32px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #ffd700;
+        text-shadow: 0 0 30px rgba(255,215,0,0.3);
+        opacity: 0;
+        transition: all 0.3s ease;
+        z-index: 25;
+        background: rgba(0,0,0,0.3);
+        padding: 2px 15px;
+        border-radius: 10px;
+    }
+    .bat-countdown.show {
+        opacity: 1;
+        animation: countdownPulse 0.5s ease;
+    }
+
+    @keyframes countdownPulse {
+        0%, 100% { transform: translateX(-50%) scale(1); }
+        50% { transform: translateX(-50%) scale(1.1); }
+    }
+
+    .bat-overlay.shaking {
+        animation: shakeBat 0.3s ease-in-out 5;
+    }
+
+    @keyframes shakeBat {
+        0%, 100% { transform: translate(-50%, -50%) rotate(0deg); }
+        25% { transform: translate(-50%, -50%) rotate(-3deg); }
+        75% { transform: translate(-50%, -50%) rotate(3deg); }
+    }
+
+    /* ===== CÁC THÀNH PHẦN GAME ===== */
+    .xiu {
+        background: url('imgs/img.png') no-repeat -343px -867px;
+        width: 130px;
+        height: 74px;
+        position: absolute;
+        left: 98px;
+        top: 190px;
+        animation: zoomout 0.2s ease-in-out infinite alternate;
+        z-index: 1;
+    }
+    .tai {
+        background: url('imgs/img.png') no-repeat -1290px -870px;
+        width: 108px;
+        height: 68px;
+        position: absolute;
+        right: 98px;
+        top: 190px;
+        animation: zoomout 0.2s ease-in-out infinite alternate;
+        z-index: 1;
+    }
+    .user {
+        background: url('imgs/img.png') no-repeat -1970px -416px;
+        width: 26px;
+        height: 34px;
+        position: absolute;
+        right: 200px;
+        top: 380px;
+    }
+    .dragon {
+        background: url('imgs/img.png') no-repeat -1538px -514px;
+        width: 317px;
+        height: 309px;
+        position: absolute;
+        left: 230px;
+        top: 130px;
+        animation: spin 5s linear infinite;
+        z-index: 0;
+    }
+    .input {
+        width: 200px;
+        height: 60px;
+        border-radius: 50px;
+        position: absolute;
+        left: 45px;
+        top: 305px;
+        outline: 0;
+        text-align: center;
+        font-size: 30px;
+        background: rgba(0,0,0,0.3);
+        border: 2px solid rgba(255,255,255,0.1);
+        color: #fff;
+        z-index: 10;
+        transition: 0.3s;
+    }
+    .input:focus {
+        border-color: #ffd700;
+        box-shadow: 0 0 20px rgba(255,215,0,0.2);
+    }
+    .input::placeholder {
+        color: rgba(255,255,255,0.3);
+    }
+    .txt { padding-top: 410px; text-align: center; top: 300px; }
+    .statustxt {
+        font-size: 25px;
+        font-weight: bold;
+        font-family: "Segoe UI";
+        top: 500px;
+        text-shadow: 0 0 3px #000;
+        color: yellow;
+        transition: 0.5s;
+        opacity: 0;
+        z-index: 50;
+        position: relative;
+    }
+    .usertxt {
+        font-size: 25px;
+        font-weight: bold;
+        font-family: "Segoe UI";
+        top: 500px;
+        text-shadow: 0 0 3px #000;
+        color: white;
+        z-index: 10;
+    }
+    .dice { position: absolute; }
+    .dice1 {
+        background: url('imgs/dice.png') no-repeat -507px -2px;
+        width: 98px;
+        height: 96px;
+        transform: scale(0.8) rotate(-20deg);
+        left: 340px;
+        top: 200px;
+        opacity: 0;
+        z-index: 3;
+    }
+    .dice2 {
+        background: url('imgs/dice.png') no-repeat -404px -3px;
+        width: 98px;
+        height: 96px;
+        transform: scale(0.8) rotate(20deg);
+        left: 300px;
+        top: 270px;
+        opacity: 0;
+        z-index: 3;
+    }
+    .dice3 {
+        background: url('imgs/dice.png') no-repeat 0 -2px;
+        width: 98px;
+        height: 96px;
+        transform: scale(0.8) rotate(10deg);
+        left: 380px;
+        top: 270px;
+        opacity: 0;
+        z-index: 3;
+    }
+    .khung {
+        background: url('imgs/img.png') no-repeat -1107px -828px;
+        width: 179px;
+        height: 45px;
+        transform: scale(0.6);
+        position: absolute;
+        left: 120px;
+        top: 135px;
+    }
+    .time {
+        font-size: 100px;
+        font-family: 'Intro', sans-serif;
+        font-weight: 800;
+        text-transform: uppercase;
+        background: -webkit-linear-gradient(-86deg, #660610 5%, black 53%, #0A99B8 91%);
+        -webkit-background-clip: text;
+        -webkit-text-stroke: 8px transparent;
+        color: white;
+        position: absolute;
+        left: 320px;
+        top: 200px;
+        z-index: 5;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @keyframes zoomout { 0% { transform: scale(1.0); } 100% { transform: scale(1.1); } }
+    input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+    /* ===== BOTTOM BAR ===== */
+    .bottom-bar {
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 95%;
+        z-index: 50;
+        background: rgba(0,0,0,0.7);
+        border-radius: 16px;
+        padding: 10px 12px 8px 12px;
+        border: 1px solid rgba(255,215,0,0.1);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        box-shadow: 0 -5px 30px rgba(0,0,0,0.5);
+        max-width: 700px;
+    }
+
+    .balance-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 4px;
+    }
+
+    .balance-label {
+        color: #888;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .balance-amount {
+        color: #ffd700;
+        font-size: 1.1rem;
+        font-weight: bold;
+        text-shadow: 0 0 20px rgba(255,215,0,0.2);
+    }
+
+    .balance-amount .coin-icon { margin-right: 4px; }
+
+    /* ===== LỊCH SỬ CẦU ===== */
+    .history-stats {
+        position: absolute;
+        bottom: 75px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90%;
+        max-width: 500px;
+        z-index: 15;
+        background: rgba(0,0,0,0.75);
+        border-radius: 12px;
+        padding: 6px 12px;
+        border: 1px solid rgba(255,255,255,0.05);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+    }
+
+    .history-stats .history-title {
+        color: #888;
+        font-size: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        text-align: center;
+        margin-bottom: 3px;
+    }
+
+    .history-stats .history-row {
+        display: flex;
+        gap: 4px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-bottom: 3px;
+    }
+
+    .history-stats .history-row .h-item {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.55rem;
+        font-weight: 700;
+        color: #fff;
+        border: 2px solid rgba(255,255,255,0.1);
+        cursor: pointer;
+        transition: 0.2s;
+        position: relative;
+    }
+
+    .history-stats .history-row .h-item:hover {
+        transform: scale(1.2);
+        z-index: 10;
+        border-color: #ffd700;
+    }
+
+    .history-stats .history-row .h-item.tai {
+        background: #4caf50;
+        border-color: #4caf50;
+        color: #fff;
+        box-shadow: 0 0 10px rgba(76,175,80,0.2);
+    }
+
+    .history-stats .history-row .h-item.xiu {
+        background: #e94560;
+        border-color: #e94560;
+        color: #fff;
+        box-shadow: 0 0 10px rgba(233,69,96,0.2);
+    }
+
+    .history-stats .history-row .h-item .tooltip {
+        display: none;
+        position: absolute;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.9);
+        color: #fff;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.6rem;
+        white-space: nowrap;
+        border: 1px solid rgba(255,255,255,0.1);
+        z-index: 20;
+    }
+
+    .history-stats .history-row .h-item:hover .tooltip {
+        display: block;
+    }
+
+    .history-stats .stats-row {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        padding-top: 3px;
+        border-top: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .history-stats .stats-row .stat-item {
+        font-size: 0.55rem;
+        color: #888;
+    }
+
+    .history-stats .stats-row .stat-item .num {
+        font-weight: 700;
+        font-size: 0.7rem;
+    }
+
+    .history-stats .stats-row .stat-item .num.tai { color: #4caf50; }
+    .history-stats .stats-row .stat-item .num.xiu { color: #e94560; }
+
+    /* ===== ADMIN PANEL ===== */
+    .admin-btn {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: rgba(233,69,96,0.3);
+        border: 2px solid #e94560;
+        border-radius: 10px;
+        color: #fff;
+        padding: 8px 16px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        z-index: 100;
+        transition: 0.3s;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        box-shadow: 0 0 20px rgba(233,69,96,0.1);
+    }
+    .admin-btn:hover {
+        background: rgba(233,69,96,0.5);
+        box-shadow: 0 0 40px rgba(233,69,96,0.3);
+        transform: scale(1.05);
+    }
+
+    .admin-btn .badge-admin {
+        display: inline-block;
+        background: #ffd700;
+        color: #000;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        font-size: 0.6rem;
+        text-align: center;
+        line-height: 18px;
+        margin-left: 5px;
+        font-weight: 700;
+    }
+
+    .admin-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.85);
+        z-index: 9999;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+    .admin-overlay.active { display: flex; }
+
+    .admin-panel {
+        background: #1a1a40;
+        border-radius: 20px;
+        padding: 30px 25px;
+        max-width: 420px;
+        width: 95%;
+        border: 2px solid #e94560;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 0 60px rgba(233,69,96,0.1);
+    }
+
+    .admin-panel h2 {
+        color: #e94560;
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 1.3rem;
+        border-bottom: 1px solid rgba(233,69,96,0.2);
+        padding-bottom: 10px;
+    }
+
+    .admin-panel .close-btn {
+        float: right;
+        background: none;
+        border: none;
+        color: #888;
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 0 5px;
+    }
+    .admin-panel .close-btn:hover { color: #fff; }
+
+    .admin-panel label {
+        display: block;
+        color: #aaa;
+        font-size: 0.8rem;
+        margin: 12px 0 4px 0;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    .admin-panel input,
+    .admin-panel select {
+        width: 100%;
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: 1px solid #2a2a5a;
+        background: #0f0f2a;
+        color: #fff;
+        font-size: 0.95rem;
+        outline: none;
+        transition: 0.3s;
+    }
+    .admin-panel input:focus,
+    .admin-panel select:focus {
+        border-color: #e94560;
+        box-shadow: 0 0 20px rgba(233,69,96,0.1);
+    }
+
+    .admin-panel .admin-row {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+        flex-wrap: wrap;
+    }
+
+    .admin-panel .admin-row button {
+        flex: 1;
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: none;
+        font-weight: 700;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: 0.3s;
+        min-width: 50px;
+    }
+    .admin-panel .admin-row button:hover { transform: scale(1.02); }
+
+    .admin-panel .btn-set { background: #4caf50; color: #fff; }
+    .admin-panel .btn-add { background: #2196F3; color: #fff; }
+    .admin-panel .btn-sub { background: #ff9800; color: #fff; }
+    .admin-panel .btn-reset { background: #e94560; color: #fff; }
+    .admin-panel .btn-force { background: #9c27b0; color: #fff; }
+    .admin-panel .btn-myself { background: #ffd700; color: #000; font-weight: 800; }
+
+    .admin-panel .admin-status {
+        margin-top: 15px;
+        padding: 10px;
+        border-radius: 10px;
+        background: rgba(0,0,0,0.3);
+        text-align: center;
+        font-size: 0.85rem;
+        color: #4caf50;
+        display: none;
+    }
+    .admin-panel .admin-status.show { display: block; }
+    .admin-panel .admin-status.error { color: #e94560; }
+
+    .admin-panel .player-list {
+        margin-top: 15px;
+        max-height: 150px;
+        overflow-y: auto;
+        background: rgba(0,0,0,0.2);
+        border-radius: 10px;
+        padding: 8px;
+    }
+    .admin-panel .player-list .player-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 4px 8px;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        font-size: 0.8rem;
+        color: #aaa;
+    }
+    .admin-panel .player-list .player-item .name { color: #ffd700; }
+    .admin-panel .player-list .player-item .bal { color: #4caf50; }
+    .admin-panel .player-list .player-item.me { background: rgba(255,215,0,0.05); border-left: 2px solid #ffd700; }
+
+    /* ===== PREDICT PANEL ===== */
+    .predict-panel {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        background: rgba(0,0,0,0.92);
+        padding: 15px 20px;
+        border-radius: 15px;
+        border: 2px solid #ffd700;
+        color: #fff;
+        max-width: 300px;
+        z-index: 999;
+        font-family: 'Segoe UI', sans-serif;
+        font-size: 14px;
+        display: none;
+        box-shadow: 0 0 30px rgba(255,215,0,0.2);
+    }
+    .predict-panel.active { display: block; }
+    .predict-btn {
+        position: fixed;
+        bottom: 80px;
+        left: 20px;
+        background: linear-gradient(135deg, #ffd700, #f57c00);
+        border: none;
+        border-radius: 50%;
+        width: 55px;
+        height: 55px;
+        font-size: 1.5rem;
+        cursor: pointer;
+        z-index: 998;
+        box-shadow: 0 0 20px rgba(255,215,0,0.3);
+        transition: 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+    .predict-btn:hover { transform: scale(1.1); }
+    .predict-btn .badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: #e94560;
+        color: #fff;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        font-size: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .bottom-bar {
+            padding: 8px 10px 6px 10px;
+            border-radius: 12px;
+            width: 98%;
+            bottom: -15px;
+        }
+        .balance-amount { font-size: 0.9rem; }
+        .balance-label { font-size: 0.6rem; }
+        .admin-panel { padding: 20px 15px; max-width: 95%; }
+        .admin-btn { top: 10px; right: 10px; font-size: 0.65rem; padding: 5px 12px; }
+        .history-stats { bottom: 70px; padding: 4px 10px; }
+        .history-stats .history-row .h-item { width: 20px; height: 20px; font-size: 0.45rem; }
+    }
+
+    @media (max-width: 480px) {
+        .bottom-bar {
+            padding: 6px 8px 4px 8px;
+            border-radius: 10px;
+        }
+        .balance-amount { font-size: 0.75rem; }
+        .balance-label { font-size: 0.5rem; }
+        .admin-btn { font-size: 0.55rem; padding: 4px 10px; }
+        .history-stats { bottom: 65px; padding: 3px 8px; }
+        .history-stats .history-row .h-item { width: 16px; height: 16px; font-size: 0.35rem; gap: 2px; }
+        .history-stats .stats-row .stat-item { font-size: 0.45rem; gap: 10px; }
+    }
+
+    @media (max-width: 360px) {
+        .balance-amount { font-size: 0.65rem; }
+        .history-stats .history-row .h-item { width: 14px; height: 14px; font-size: 0.3rem; }
+    }
+    </style>
+</head>
+<body>
+    <!-- ADMIN BUTTON -->
+    <button class="admin-btn" onclick="toggleAdmin()">
+        🔐 ADMIN
+        <span class="badge-admin" id="adminBadge">0</span>
+    </button>
+
+    <!-- ADMIN PANEL OVERLAY -->
+    <div class="admin-overlay" id="adminOverlay">
+        <div class="admin-panel">
+            <button class="close-btn" onclick="toggleAdmin()">✕</button>
+            <h2>🛠️ ADMIN PANEL</h2>
+
+            <label>🔑 Mật khẩu Admin</label>
+            <input type="password" id="adminPass" placeholder="Nhập mật khẩu admin" value="admin123">
+
+            <label>👤 Chọn người chơi</label>
+            <select id="adminPlayerSelect">
+                <option value="">-- Chọn người chơi --</option>
+            </select>
+
+            <label>💰 Số tiền</label>
+            <input type="number" id="adminAmount" placeholder="Nhập số tiền" value="100000">
+
+            <div class="admin-row">
+                <button class="btn-myself" onclick="adminAddMyself()">👤 + Cho tôi</button>
+            </div>
+
+            <div class="admin-row">
+                <button class="btn-set" onclick="adminSetBalance()">Set</button>
+                <button class="btn-add" onclick="adminAddBalance()">+ Thêm</button>
+                <button class="btn-sub" onclick="adminSubBalance()">- Trừ</button>
+                <button class="btn-reset" onclick="adminResetBalance()">Reset</button>
+            </div>
+
+            <label>🎯 Force kết quả (Cầu)</label>
+            <select id="adminForceSelect">
+                <option value="">-- Không force --</option>
+                <option value="tai">Tài</option>
+                <option value="xiu">Xỉu</option>
+            </select>
+            <button class="btn-force" onclick="adminForceResult()" style="width:100%; margin-top:8px;">🎯 ÁP DỤNG CẦU</button>
+
+            <div class="admin-status" id="adminStatus"></div>
+
+            <label>📋 Danh sách người chơi</label>
+            <div class="player-list" id="adminPlayerList">
+                <div class="player-item" style="color:#666; text-align:center;">Chưa có người chơi</div>
+            </div>
+
+            <div style="margin-top:10px; font-size:0.7rem; color:#666; text-align:center;">
+                ⚠️ Mật khẩu mặc định: <strong style="color:#888;">admin123</strong>
+                <br>👤 Bấm <strong style="color:#ffd700;">"+ Cho tôi"</strong> để tự cộng tiền cho mình!
+            </div>
+        </div>
+    </div>
+
+    <div class="main">
+        <!-- BÁT -->
+        <div class="bat-overlay closed locked" id="batOverlay">
+            <div class="handle"></div>
+            <div class="label">✦ TÀI XỈU ✦</div>
+            <div class="lock-icon">🔒</div>
+            <div class="bat-countdown" id="batCountdown">60</div>
+            <div class="lock-notice show" id="lockNotice">⏳ ĐANG ĐẶT CƯỢC</div>
+        </div>
+
+        <div class="bat-glow" id="batGlow"></div>
+        <div class="result-display" id="resultDisplay"></div>
+
+        <!-- GAME -->
+        <div id="dragon" class="dragon"></div>
+        <div class="khung"></div>
+        <div id="time" class="time"></div>
+        <p id="id" class="statustxt" style="position: absolute; opacity: 1; left: 180px; top: 130px; font-size: 17px; z-index:10;"></p>
+        <div id="taitxt" class="tai"></div>
+        <div id="xiutxt" class="xiu"></div>
+        <p id="sumxiu" class="usertxt" style="position: absolute; left: 115px; top: 242px;"></p>
+        <p id="sumtai" class="usertxt" style="position: absolute; right: 130px; top: 242px;"></p>
+        <div id="dice1" class="dice dice1"></div>
+        <div id="dice2" class="dice dice2"></div>
+        <div id="dice3" class="dice dice3"></div>
+        <div class="user"></div>
+        <div class="user" style="left: 80px;"></div>
+
+        <!-- Ô NHẬP CƯỢC -->
+        <input id="pullxiu" class="input" type="number" placeholder="Cược Xỉu">
+        <input id="pulltai" class="input" type="number" placeholder="Cược Tài" style="left: 525px;">
+
+        <!-- ===== LỊCH SỬ CẦU ===== -->
+        <div class="history-stats" id="historyStats">
+            <div class="history-title">📊 LỊCH SỬ CẦU</div>
+            <div class="history-row" id="historyRow">
+                <span style="color:#555; font-size:0.5rem;">Chưa có dữ liệu</span>
+            </div>
+            <div class="stats-row" id="statsRow">
+                <span class="stat-item">🟢 Tài: <span class="num tai" id="statTai">0</span></span>
+                <span class="stat-item">🔴 Xỉu: <span class="num xiu" id="statXiu">0</span></span>
+                <span class="stat-item">📊 Tổng: <span class="num" id="statTotal" style="color:#ffd700;">0</span></span>
+            </div>
+        </div>
+
+        <img src="" id="roll" style="position: absolute; left:300px; top: 190px; transition: 0.5s; opacity: 0; width: 180px; z-index:10;"/>
+        <p id="userxiu" class="usertxt" style="position: absolute; left: 115px; top: 352px;"></p>
+        <p id="usertai" class="usertxt" style="position: absolute; right: 180px; top: 352px;"></p>
+        <div class="txt">
+            <p id="statustxt" class="statustxt"></p>
+        </div>
+
+        <!-- BOTTOM BAR - SỐ DƯ -->
+        <div class="bottom-bar">
+            <div class="balance-row">
+                <span class="balance-label">💰 Số dư</span>
+                <span class="balance-amount">
+                    <span class="coin-icon">🪙</span>
+                    <span id="playerBalance">0</span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANEL SOI CẦU -->
+    <div class="predict-panel" id="predictPanel">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <h3 style="color:#ffd700; margin:0; font-size:16px;">🎯 SOI CẦU</h3>
+            <button onclick="document.getElementById('predictPanel').classList.remove('active')" style="background:none; border:none; color:#888; cursor:pointer; font-size:18px;">✕</button>
+        </div>
+        <div id="predictContent">
+            <div style="color:#888;">Đang phân tích...</div>
+        </div>
+        <div style="margin-top:10px; display:flex; gap:10px;">
+            <button onclick="getPrediction()" style="flex:1; padding:5px; background:#e94560; border:none; border-radius:8px; color:#fff; cursor:pointer; font-weight:bold;">🔄 Cập nhật</button>
+            <button onclick="document.getElementById('predictPanel').classList.remove('active')" style="flex:1; padding:5px; background:#2a2a5a; border:none; border-radius:8px; color:#fff; cursor:pointer;">Đóng</button>
+        </div>
+    </div>
+
+    <!-- NÚT SOI CẦU -->
+    <button class="predict-btn" onclick="togglePredictPanel()">
+        🎯
+        <span class="badge" id="predictBadge">0</span>
+    </button>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+    // ===================== DOM =====================
+    var d1 = document.getElementById("dice1");
+    var d2 = document.getElementById("dice2");
+    var d3 = document.getElementById("dice3");
+    var idGame = document.getElementById("id");
+    var soNguoiChonTai = document.getElementById("usertai");
+    var soNguoiChonXiu = document.getElementById("userxiu");
+    var tongTienDatTai = document.getElementById("sumtai");
+    var tongTienDatXiu = document.getElementById("sumxiu");
+    var time = document.getElementById("time");
+    var batOverlay = document.getElementById("batOverlay");
+    var batCountdown = document.getElementById("batCountdown");
+    var batGlow = document.getElementById("batGlow");
+    var resultDisplay = document.getElementById("resultDisplay");
+    var lockNotice = document.getElementById("lockNotice");
+    var playerBalanceEl = document.getElementById("playerBalance");
+    var historyRow = document.getElementById("historyRow");
+    var statTai = document.getElementById("statTai");
+    var statXiu = document.getElementById("statXiu");
+    var statTotal = document.getElementById("statTotal");
+
+    // ===================== BIẾN =====================
+    var playerId = null;
+    var playerBalance = 0;
+    var isLocked = true;
+    var isBatOpen = false;
+    var isDragging = false;
+    var startX, startY;
+    var batPosX = 0, batPosY = 0;
+    var NAN_TIME = 15;
+    var nanCountdown = 0;
+    var isNanPhase = false;
+    var nanInterval = null;
+    var gameOverData = null;
+    var playersData = {};
+    var currentUsername = '';
+    var historyResults = [];
+    var MAX_HISTORY = 30;
+
+    // ===================== SOCKET =====================
+    var socket = io();
+
+    // ===================== CẬP NHẬT SỐ DƯ =====================
+    function updateBalance(amount) {
+        playerBalance = amount;
+        playerBalanceEl.textContent = amount.toLocaleString();
+    }
+
+    // ===================== LỊCH SỬ CẦU =====================
+    function updateHistory(result) {
+        if (result) {
+            historyResults.push(result);
+            if (historyResults.length > MAX_HISTORY) {
+                historyResults.shift();
+            }
+        }
+        renderHistory();
+    }
+
+    function renderHistory() {
+        if (historyResults.length === 0) {
+            historyRow.innerHTML = '<span style="color:#555; font-size:0.5rem;">Chưa có dữ liệu</span>';
+            statTai.textContent = '0';
+            statXiu.textContent = '0';
+            statTotal.textContent = '0';
+            return;
+        }
+
+        var html = '';
+        var taiCount = 0;
+        var xiuCount = 0;
+
+        var displayHistory = historyResults.slice(-20);
+        displayHistory.forEach(function(item, index) {
+            var cls = item === 'tai' ? 'tai' : 'xiu';
+            var label = item === 'tai' ? 'T' : 'X';
+            var tooltip = item === 'tai' ? '🟢 Tài' : '🔴 Xỉu';
+            // Thêm số thứ tự nếu muốn
+            html += '<div class="h-item ' + cls + '" title="' + tooltip + '">' + label + '<span class="tooltip">' + tooltip + '</span></div>';
+            if (item === 'tai') taiCount++;
+            else xiuCount++;
+        });
+
+        historyRow.innerHTML = html;
+        statTai.textContent = taiCount;
+        statXiu.textContent = xiuCount;
+        statTotal.textContent = historyResults.length;
+    }
+
+    // ===================== KÉO THẢ BÁT =====================
+    function setLocked(locked) {
+        isLocked = locked;
+        if (locked) {
+            batOverlay.classList.add('locked');
+            lockNotice.classList.add('show');
+            batPosX = 0;
+            batPosY = 0;
+            batOverlay.style.transform = 'translate(-50%, -50%)';
+        } else {
+            batOverlay.classList.remove('locked');
+            lockNotice.classList.remove('show');
+        }
+    }
+
+    function initDrag(e) {
+        if (isBatOpen) return;
+        if (isLocked) {
+            batOverlay.style.animation = 'shakeBat 0.3s ease-in-out 2';
+            setTimeout(function() { batOverlay.style.animation = ''; }, 600);
+            return;
+        }
+        isDragging = true;
+        batOverlay.classList.add('dragging');
+        var touch = e.touches ? e.touches[0] : e;
+        startX = touch.clientX - batPosX;
+        startY = touch.clientY - batPosY;
+        e.preventDefault();
+    }
+
+    function moveDrag(e) {
+        if (!isDragging || isBatOpen || isLocked) return;
+        var touch = e.touches ? e.touches[0] : e;
+        batPosX = touch.clientX - startX;
+        batPosY = touch.clientY - startY;
+        batOverlay.style.transform = 'translate(calc(-50% + ' + batPosX + 'px), calc(-50% + ' + batPosY + 'px))';
+        e.preventDefault();
+    }
+
+    function endDrag(e) {
+        if (isDragging) {
+            isDragging = false;
+            batOverlay.classList.remove('dragging');
+        }
+    }
+
+    batOverlay.addEventListener('mousedown', initDrag);
+    document.addEventListener('mousemove', moveDrag);
+    document.addEventListener('mouseup', endDrag);
+    batOverlay.addEventListener('touchstart', initDrag, { passive: false });
+    document.addEventListener('touchmove', moveDrag, { passive: false });
+    document.addEventListener('touchend', endDrag);
+
+    // ===================== GAME FUNCTIONS =====================
+    function gameStart() {
+        time.style.opacity = 1;
+        d1.style.opacity = 0; d2.style.opacity = 0; d3.style.opacity = 0;
+        document.getElementById('dragon').style.webkitAnimationPlayState = 'running';
+        document.getElementById("taitxt").style.webkitAnimationPlayState = 'paused';
+        document.getElementById("xiutxt").style.webkitAnimationPlayState = 'paused';
+        resetBat();
+        setLocked(true);
+        lockNotice.textContent = '⏳ ĐANG ĐẶT CƯỢC';
+        isNanPhase = false;
+        if (nanInterval) { clearInterval(nanInterval); nanInterval = null; }
+    }
+
+    function startNanPhase(diceData) {
+        isNanPhase = true;
+        nanCountdown = NAN_TIME;
+        gameOverData = diceData;
+        setLocked(false);
+        lockNotice.textContent = '👆 HÃY KÉO BÁT ĐỂ XEM (15s)';
+        batCountdown.textContent = nanCountdown;
+        batCountdown.classList.add('show');
+        showStt('🔄 HẾT GIỜ! HÃY KÉO BÁT ĐỂ XEM KẾT QUẢ - 15s', 3000);
+        if (nanInterval) clearInterval(nanInterval);
+        nanInterval = setInterval(function() {
+            nanCountdown--;
+            batCountdown.textContent = nanCountdown;
+            if (nanCountdown <= 3) { batOverlay.classList.add('shaking'); }
+            else { batOverlay.classList.remove('shaking'); }
+            if (nanCountdown <= 0) {
+                clearInterval(nanInterval);
+                nanInterval = null;
+                autoOpenBat();
+            }
+        }, 1000);
+    }
+
+    function autoOpenBat() {
+        if (isBatOpen || !gameOverData) return;
+        isNanPhase = false;
+        batCountdown.classList.remove('show');
+        batOverlay.classList.remove('shaking');
+        lockNotice.textContent = '⏳ ĐANG MỞ BÁT...';
+        openBat(gameOverData.dice1, gameOverData.dice2, gameOverData.dice3, gameOverData.result);
+        gameOverData = null;
+    }
+
+    function gameOver(dice) {
+        time.style.opacity = 0;
+        var roll = document.getElementById("roll");
+        document.getElementById('dragon').style.webkitAnimationPlayState = 'paused';
+        roll.src = "";
+        roll.src = 'imgs/roll1.gif';
+        roll.style.opacity = 1;
+        setLocked(true);
+        lockNotice.textContent = '⏳ ĐANG CHỜ NẶN...';
+        updateHistory(dice.result);
+        setTimeout(function() {
+            roll.style.opacity = 0;
+            showDice(dice.dice1, dice.dice2, dice.dice3);
+            document.getElementById(dice.result + "txt").style.webkitAnimationPlayState = 'running';
+            startNanPhase(dice);
+        }, 2000);
+    }
+
+    function showDice(dice1, dice2, dice3) {
+        var diceMap = {
+            1: '0 -2px',
+            2: '-103px -3px',
+            3: '-204px -3px',
+            4: '-305px -3px',
+            5: '-404px -3px',
+            6: '-507px -2px'
+        };
+        d1.style.background = "url('imgs/dice.png') no-repeat " + diceMap[dice1];
+        d2.style.background = "url('imgs/dice.png') no-repeat " + diceMap[dice2];
+        d3.style.background = "url('imgs/dice.png') no-repeat " + diceMap[dice3];
+        d1.style.opacity = 1; d2.style.opacity = 1; d3.style.opacity = 1;
+    }
+
+    function showStt(msg, timeout) {
+        timeout = timeout || 3000;
+        var statustxt = document.getElementById('statustxt');
+        statustxt.innerHTML = msg;
+        statustxt.style.opacity = 1;
+        clearTimeout(statustxt._timer);
+        statustxt._timer = setTimeout(function() { statustxt.style.opacity = 0; }, timeout);
+    }
+
+    // ===================== BÁT =====================
+    function resetBat() {
+        batOverlay.className = 'bat-overlay closed';
+        batOverlay.style.transform = 'translate(-50%, -50%)';
+        batGlow.classList.remove('show');
+        resultDisplay.classList.remove('show');
+        resultDisplay.textContent = '';
+        batCountdown.classList.remove('show');
+        batOverlay.classList.remove('shaking');
+        isBatOpen = false;
+        batPosX = 0; batPosY = 0;
+        batOverlay.style.pointerEvents = 'auto';
+        setLocked(true);
+        if (nanInterval) { clearInterval(nanInterval); nanInterval = null; }
+        isNanPhase = false;
+        gameOverData = null;
+    }
+
+    function updateBatCountdown(seconds) {
+        if (seconds > 0 && seconds <= 10 && !isNanPhase) {
+            batCountdown.textContent = seconds;
+            batCountdown.classList.add('show');
+            if (seconds <= 3) { batOverlay.classList.add('shaking'); }
+            else { batOverlay.classList.remove('shaking'); }
+        } else if (!isNanPhase) {
+            batCountdown.classList.remove('show');
+            batOverlay.classList.remove('shaking');
+        }
+    }
+
+// ===================== MỞ BÁT (NẶN) =====================
+function openBat(dice1, dice2, dice3, result) {
+    isBatOpen = true;
+    batOverlay.className = 'bat-overlay opening';
+    batOverlay.style.pointerEvents = 'none';
+    setLocked(true);
+    batGlow.classList.add('show');
+    
+    // ===== GỬI TÍN HIỆU ĐÃ NẶN XONG =====
+    socket.emit('nhanXong', {});
+    console.log('👆 Đã nặn xong! Gửi tín hiệu tính tiền...');
+    
+    setTimeout(function() {
+        batOverlay.className = 'bat-overlay open';
+        var resultText = result === 'tai' ? '🟢 TÀI' : '🔴 XỈU';
+        var resultColor = result === 'tai' ? '#4caf50' : '#e94560';
+        resultDisplay.textContent = '🎯 ' + resultText;
+        resultDisplay.style.color = resultColor;
+        resultDisplay.classList.add('show');
+        lockNotice.textContent = '✅ ĐÃ MỞ BÁT - KẾT QUẢ: ' + resultText;
+        
+        setTimeout(function() { 
+            batGlow.classList.remove('show'); 
+        }, 3000);
+        
+        setTimeout(function() { 
+            resetBat(); 
+            socket.emit('nextRound'); 
+        }, 4000);
+    }, 2000);
+}
+
+    // ===================== ADMIN FUNCTIONS =====================
+    var adminPassword = 'admin123';
+
+    function toggleAdmin() {
+        var overlay = document.getElementById('adminOverlay');
+        overlay.classList.toggle('active');
+        if (overlay.classList.contains('active')) {
+            updateAdminPlayerList();
+            document.getElementById('adminPass').value = '';
+            document.getElementById('adminStatus').classList.remove('show');
+            if (currentUsername) {
+                var select = document.getElementById('adminPlayerSelect');
+                for (var i = 0; i < select.options.length; i++) {
+                    if (select.options[i].value === currentUsername) {
+                        select.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    function updateAdminPlayerList() {
+        socket.emit('getPlayers');
+    }
+
+    function adminCheckPassword() {
+        var pass = document.getElementById('adminPass').value;
+        if (pass !== adminPassword) {
+            var status = document.getElementById('adminStatus');
+            status.textContent = '❌ Sai mật khẩu! Vui lòng nhập đúng mật khẩu admin.';
+            status.className = 'admin-status show error';
+            return false;
+        }
+        return true;
+    }
+
+    function adminAddMyself() {
+        if (!adminCheckPassword()) return;
+        var amount = parseInt(document.getElementById('adminAmount').value);
+        if (isNaN(amount) || amount <= 0) {
+            showAdminStatus('⚠️ Vui lòng nhập số tiền hợp lệ!', 'error');
+            return;
+        }
+        socket.emit('adminAddMyself', { amount: amount });
+        showAdminStatus('👤 Đang cộng ' + amount.toLocaleString() + ' coins cho bạn...', 'success');
+        playerBalance += amount;
+        updateBalance(playerBalance);
+    }
+
+    function adminSetBalance() {
+        if (!adminCheckPassword()) return;
+        var user = document.getElementById('adminPlayerSelect').value;
+        var amount = parseInt(document.getElementById('adminAmount').value);
+        if (!user || isNaN(amount) || amount < 0) {
+            showAdminStatus('⚠️ Vui lòng chọn người chơi và nhập số tiền hợp lệ!', 'error');
+            return;
+        }
+        socket.emit('adminSetBalance', { user: user, amount: amount });
+        showAdminStatus('✅ Đã set ' + user + ' = ' + amount.toLocaleString() + ' coins', 'success');
+    }
+
+    function adminAddBalance() {
+        if (!adminCheckPassword()) return;
+        var user = document.getElementById('adminPlayerSelect').value;
+        var amount = parseInt(document.getElementById('adminAmount').value);
+        if (!user || isNaN(amount) || amount <= 0) {
+            showAdminStatus('⚠️ Vui lòng chọn người chơi và nhập số tiền hợp lệ!', 'error');
+            return;
+        }
+        socket.emit('adminAddBalance', { user: user, amount: amount });
+        showAdminStatus('✅ Đã cộng ' + amount.toLocaleString() + ' coins cho ' + user, 'success');
+    }
+
+    function adminSubBalance() {
+        if (!adminCheckPassword()) return;
+        var user = document.getElementById('adminPlayerSelect').value;
+        var amount = parseInt(document.getElementById('adminAmount').value);
+        if (!user || isNaN(amount) || amount <= 0) {
+            showAdminStatus('⚠️ Vui lòng chọn người chơi và nhập số tiền hợp lệ!', 'error');
+            return;
+        }
+        socket.emit('adminSubBalance', { user: user, amount: amount });
+        showAdminStatus('✅ Đã trừ ' + amount.toLocaleString() + ' coins của ' + user, 'success');
+    }
+
+    function adminResetBalance() {
+        if (!adminCheckPassword()) return;
+        var user = document.getElementById('adminPlayerSelect').value;
+        if (!user) {
+            showAdminStatus('⚠️ Vui lòng chọn người chơi!', 'error');
+            return;
+        }
+        socket.emit('adminResetBalance', { user: user });
+        showAdminStatus('✅ Đã reset ' + user + ' về 0 coins', 'success');
+    }
+
+    function adminForceResult() {
+        if (!adminCheckPassword()) return;
+        var force = document.getElementById('adminForceSelect').value;
+        socket.emit('adminForceResult', { result: force });
+        if (force) {
+            showAdminStatus('🎯 Đã force kết quả: ' + force.toUpperCase(), 'success');
+        } else {
+            showAdminStatus('🎲 Đã hủy force, kết quả random', 'success');
+        }
+    }
+
+    function showAdminStatus(msg, type) {
+        var status = document.getElementById('adminStatus');
+        status.textContent = msg;
+        status.className = 'admin-status show';
+        if (type === 'error') status.classList.add('error');
+        setTimeout(function() {
+            status.classList.remove('show');
+        }, 4000);
+    }
+
+    // ===================== SOCKET EVENTS =====================
+    socket.on('gameData', function(data) {
+        idGame.innerHTML = '#' + data.idGame;
+        soNguoiChonTai.innerHTML = data.soNguoiChonTai;
+        soNguoiChonXiu.innerHTML = data.soNguoiChonXiu;
+        tongTienDatTai.innerHTML = (data.tongTienDatTai / 1000).toFixed(0) + 'k';
+        tongTienDatXiu.innerHTML = (data.tongTienDatXiu / 1000).toFixed(0) + 'k';
+
+        if (data.time.toString().length == 1) {
+            time.innerHTML = data.time == 0 ? '' : '0' + data.time;
+        } else {
+            time.innerHTML = data.time;
+        }
+
+        if (!isNanPhase) {
+            if (data.time > 0 && data.time <= 10) {
+                updateBatCountdown(data.time);
+            } else if (data.time > 10) {
+                batCountdown.classList.remove('show');
+                batOverlay.classList.remove('shaking');
+            }
+        }
+    });
+
+    socket.on('gameOver', function(data) { gameOver(data); });
+    socket.on('gameStart', function(data) {
+        gameStart();
+        showStt('🆕 Game bắt đầu!', 2000);
+        resetBat();
+        resultDisplay.classList.remove('show');
+        batCountdown.classList.remove('show');
+        batOverlay.style.pointerEvents = 'auto';
+        setLocked(true);
+        lockNotice.textContent = '⏳ ĐANG ĐẶT CƯỢC';
+    });
+
+    socket.on('pull', function(data) {
+        if (data.status == 'success') {
+            showStt('✅ Đặt cược thành công!', 2000);
+            // Cập nhật số dư từ server
+            if (data.balance !== undefined) {
+                updateBalance(data.balance);
+            } else {
+                // Nếu server không gửi balance, request lại
+                socket.emit('getPlayers');
+            }
+        } else if (data.status == 'error') {
+            showStt('❌ ' + data.error, 3000);
+        }
+    });
+
+    socket.on('winGame', function(data) {
+        showStt('🎉 ' + data.msg, 5000);
+        if (data.balance !== undefined) updateBalance(data.balance);
+    });
+
+    // Admin socket events
+    socket.on('adminPlayerList', function(data) {
+        var select = document.getElementById('adminPlayerSelect');
+        var list = document.getElementById('adminPlayerList');
+
+        select.innerHTML = '<option value="">-- Chọn người chơi --</option>';
+        data.players.forEach(function(p) {
+            var opt = document.createElement('option');
+            opt.value = p.name;
+            var isMe = (p.name === currentUsername);
+            opt.textContent = p.name + ' (' + p.balance.toLocaleString() + ' coins)' + (isMe ? ' 👤 Bạn' : '');
+            if (isMe) opt.style.color = '#ffd700';
+            select.appendChild(opt);
+        });
+
+        if (currentUsername) {
+            for (var i = 0; i < select.options.length; i++) {
+                if (select.options[i].value === currentUsername) {
+                    select.selectedIndex = i;
+                    break;
+                }
+            }
+        }
+
+        if (data.players.length === 0) {
+            list.innerHTML = '<div class="player-item" style="color:#666; text-align:center;">Chưa có người chơi</div>';
+        } else {
+            list.innerHTML = data.players.map(function(p) {
+                var isMe = (p.name === currentUsername);
+                return '<div class="player-item ' + (isMe ? 'me' : '') + '"><span class="name">' + p.name + (isMe ? ' 👤' : '') + '</span><span class="bal">' + p.balance.toLocaleString() + ' coins</span></div>';
+            }).join('');
+        }
+
+        document.getElementById('adminBadge').textContent = data.players.length;
+        playersData = {};
+        data.players.forEach(function(p) { playersData[p.name] = p.balance; });
+
+        // Cập nhật số dư cho current user
+        if (currentUsername && playersData[currentUsername] !== undefined) {
+            updateBalance(playersData[currentUsername]);
+        }
+    });
+
+    socket.on('adminResult', function(data) {
+        if (data.status === 'success') {
+            showAdminStatus('✅ ' + data.message, 'success');
+            socket.emit('getPlayers');
+            if (data.balance !== undefined && data.user === currentUsername) {
+                updateBalance(data.balance);
+            }
+        } else {
+            showAdminStatus('❌ ' + data.message, 'error');
+        }
+    });
+
+    // ===================== ĐẶT CƯỢC TỪ Ô NHẬP =====================
+    document.getElementById('pulltai').addEventListener("keyup", function(event) {
+        if (event.key === "Enter") {
+            var money = Number(this.value);
+            if (money > 0) {
+                socket.emit('pull', { id: socket.id, dice: 'tai', money: money });
+                this.value = '';
+            } else {
+                showStt('⚠️ Vui lòng nhập số tiền hợp lệ!');
+            }
+        }
+    });
+
+    document.getElementById('pullxiu').addEventListener("keyup", function(event) {
+        if (event.key === "Enter") {
+            var money = Number(this.value);
+            if (money > 0) {
+                socket.emit('pull', { id: socket.id, dice: 'xiu', money: money });
+                this.value = '';
+            } else {
+                showStt('⚠️ Vui lòng nhập số tiền hợp lệ!');
+            }
+        }
+    });
+
+    // ===================== SOI CẦU =====================
+    function togglePredictPanel() {
+        var panel = document.getElementById('predictPanel');
+        panel.classList.toggle('active');
+        if (panel.classList.contains('active')) getPrediction();
+    }
+
+    function getPrediction() { socket.emit('predict'); }
+
+    socket.on('predictResult', function(data) {
+        var content = document.getElementById('predictContent');
+        var badge = document.getElementById('predictBadge');
+        if (data.predict === 'chưa đủ dữ liệu') {
+            content.innerHTML = `
+                <div style="color:#ff9800;">📊 Chưa đủ dữ liệu để soi cầu</div>
+                <div style="color:#888; font-size:12px; margin-top:5px;">Cần ít nhất 3 ván để phân tích</div>
+                <div style="color:#888; font-size:12px;">Đã có: ${data.totalHistory || 0} ván</div>
+            `;
+            badge.textContent = '?';
+            return;
+        }
+        var predictEmoji = data.predict === 'tai' ? '🟢' : '🔴';
+        var predictColor = data.predict === 'tai' ? '#4caf50' : '#e94560';
+        var streakHtml = data.isStreak ? `
+            <div style="color:#ffd700; font-size:13px; margin-top:5px;">
+                ⚠️ Cầu ${data.streakType.toUpperCase()} đang chạy ${data.streakCount} ván!
+            </div>
+        ` : `
+            <div style="color:#888; font-size:12px; margin-top:5px;">
+                ${data.suggestion}
+            </div>
+        `;
+        content.innerHTML = `
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <span>📊 Dự đoán:</span>
+                <span style="color:${predictColor}; font-weight:bold; font-size:18px;">
+                    ${predictEmoji} ${data.predict.toUpperCase()}
+                </span>
+            </div>
+            <div style="display:flex; gap:15px; margin-bottom:5px;">
+                <span>🟢 Tài: <strong style="color:#4caf50;">${data.taiRate}%</strong></span>
+                <span>🔴 Xỉu: <strong style="color:#e94560;">${data.xiuRate}%</strong></span>
+            </div>
+            <div style="color:#888; font-size:12px;">
+                🎯 Độ tin cậy: ${data.confidence}% | 📊 ${data.totalHistory} ván
+            </div>
+            ${streakHtml}
+        `;
+        badge.textContent = data.totalHistory || 0;
+    });
+
+    socket.on('connect', function() {
+        socket.emit('getHistory');
+        socket.emit('getPlayers');
+        playerId = socket.id;
+        console.log('🟢 Đã kết nối server! ID:', playerId);
+    });
+
+    socket.on('historyResult', function(data) {
+        console.log('📊 Lịch sử kết quả:', data.history);
+        if (data.history && data.history.length > 0) {
+            historyResults = data.history.slice(-MAX_HISTORY);
+            renderHistory();
+        }
+        document.getElementById('predictBadge').textContent = data.total || 0;
+    });
+
+    socket.on('balanceUpdate', function(data) {
+        if (data.balance !== undefined) updateBalance(data.balance);
+        if (data.username) currentUsername = data.username;
+    });
+
+    socket.on('userInfo', function(data) {
+        if (data.username) {
+            currentUsername = data.username;
+            updateBalance(data.balance || 0);
+            console.log('👤 Người chơi: ' + currentUsername);
+        }
+    });
+
+    // ===================== KHỞI TẠO =====================
+    gameStart();
+    setLocked(true);
+    updateBalance(0);
+    renderHistory();
+    console.log('🎯 kingsmpvn - Tài Xỉu đã sẵn sàng!');
+    console.log('🔐 Admin mật khẩu: admin123');
+    console.log('📝 Nhập số tiền vào ô Tài hoặc Xỉu, nhấn Enter để cược!');
+    console.log('📊 Lịch sử cầu hiển thị bên dưới game!');
+    console.log('🎲 Chúc bạn may mắn!');
+    </script>
+</body>
+</html>
